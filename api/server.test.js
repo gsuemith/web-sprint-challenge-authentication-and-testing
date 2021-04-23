@@ -8,6 +8,11 @@ const carol = {
   password: "foobar"
 }
 
+const dad_joke = {
+  "id": "0189hNRf2g",
+  "joke": "I'm tired of following my dreams. I'm just going to ask them where they are going and meet up with them later."
+}
+
 test('sanity', () => {
   expect(true).not.toBe(false) 
   //I saw what you did there
@@ -117,12 +122,38 @@ describe("server", () => {
         .post("/api/auth/login")
         .send(carol)
       
-      let { token } = JSON.parse(res.text)
+      let { token } = res.body
 
       res = await request(server)
         .get("/api/jokes")
         .set("Authorization", token)
+      expect(res.status).toBe(200)
+    })
+    it("serves correct number of jokes", async () => {
+      let res;
+      await request(server)
+        .post("/api/auth/register")
+        .send(carol)
+      res = await request(server)
+        .post("/api/auth/login")
+        .send(carol)
+      res = await request(server)
+        .get("/api/jokes")
+        .set("Authorization", res.body.token)
       expect(res.body).toHaveLength(3)
+    })
+    it("serves correctly formatted jokes", async () => {
+      let res;
+      await request(server)
+        .post("/api/auth/register")
+        .send(carol)
+      res = await request(server)
+        .post("/api/auth/login")
+        .send(carol)
+      res = await request(server)
+        .get("/api/jokes")
+        .set("Authorization", res.body.token)
+      expect(res.body[0]).toEqual(dad_joke)
     })
   })
 })
