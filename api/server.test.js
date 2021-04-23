@@ -1,11 +1,16 @@
 // Write your tests here
-
 const request = require("supertest")
 const db = require("../data/dbConfig.js")
 const server = require('./server.js')
 
+const carol = {
+  username: "Captain Marvel",
+  password: "foobar"
+}
+
 test('sanity', () => {
-  expect(true).not.toBe(false) //I saw what you did there
+  expect(true).not.toBe(false) 
+  //I saw what you did there
 })
 
 beforeAll(async ()=>{
@@ -21,6 +26,41 @@ afterAll(async () => {
 })
 
 describe("server", () => {
+  describe("[POST] /api/auth/register", () => {
+    test("user can register", async () => {
+      let res;
+      res = await request(server).post("/api/auth/register").send(carol)
+      expect(res.status).toBe(201)
+    })
+    it("adds the user to the database", async () => {
+      let res;
+      await request(server).post("/api/auth/register").send(carol)
+      res = await db('users')
+        .where({ id: 1 })
+        .first()
+      expect(res.username).toBe(carol.username)
+    })
+    it("rejects username if taken", async () => {
+      let res;
+      await request(server).post("/api/auth/register").send(carol)
+
+      res = await request(server).post("/api/auth/register").send(carol)
+      expect(res.status).toBe(400)
+      expect(res.text).toMatch(/.*username taken.*/)
+    })
+    it("requires username and password", async () => {
+      let res;
+      res = await request(server)
+        .post("/api/auth/register")
+        .send({password: "foobar"})
+      expect(res.text).toMatch(/.*username and password required.*/)
+
+      res = await request(server)
+        .post("/api/auth/register")
+        .send({username: "Captain Marvel"})
+      expect(res.text).toMatch(/.*username and password required.*/)
+    })
+  })
   describe("[GET] /api/jokes", () => {
     it("is restricted by middleware", async () => {
       const res = await request(server).get("/api/jokes")
