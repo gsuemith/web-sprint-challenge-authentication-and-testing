@@ -61,6 +61,9 @@ describe("server", () => {
       expect(res.text).toMatch(/.*username and password required.*/)
     })
   })
+  describe("[POST] /api/auth/login", () => {
+    
+  })
   describe("[GET] /api/jokes", () => {
     it("is restricted by middleware", async () => {
       const res = await request(server).get("/api/jokes")
