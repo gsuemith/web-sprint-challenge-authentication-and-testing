@@ -2,7 +2,6 @@ const jwt = require('jsonwebtoken')
 
 module.exports = (req, res, next) => {
   const token = req.headers.authorization
-  next();
   /*
     IMPLEMENT
 
@@ -13,12 +12,14 @@ module.exports = (req, res, next) => {
       if (!err) {
         req.decodedToken = decoded;
         next();
+        return;
       }
   /*
     3- On invalid or expired token in the Authorization header,
       the response body should include a string exactly as follows: "token invalid".
   */
       res.status(401).json({ message: "token invalid" })
+      return;
     })
   }
 
