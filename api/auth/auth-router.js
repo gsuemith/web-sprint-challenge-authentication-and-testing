@@ -7,13 +7,9 @@ const db = require('../../data/dbConfig')
 const { validateBody, usernameTaken, userExists } = require('./auth-middleware')
 
 /*
-IMPLEMENT
+IMPLEMENT [POST] /api/auth/register
 You are welcome to build additional middlewares to help with the endpoint's functionality.
 DO NOT EXCEED 2^8 ROUNDS OF HASHING!
-
-
-  }
-
 */
 router.post('/register', validateBody, usernameTaken, async (req, res) => {
 
@@ -46,7 +42,7 @@ router.post('/register', validateBody, usernameTaken, async (req, res) => {
 });
 
 /*
-  IMPLEMENT
+  IMPLEMENT [POST] /api/auth/login
   You are welcome to build additional middlewares to help with the endpoint's functionality.
 */
 router.post('/login', validateBody, userExists, (req, res) => {
@@ -60,7 +56,7 @@ router.post('/login', validateBody, userExists, (req, res) => {
   let user = req.user //from middleware
 
   if (bcrypt.compareSync(password, user.password)){
-    const token = makeToken(user)
+    const token = makeToken(user) //implemented below
 
     // 2- On SUCCESSFUL login,
     // the response body should have `message` and `token`:

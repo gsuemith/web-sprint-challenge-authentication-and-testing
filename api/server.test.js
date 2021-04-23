@@ -62,13 +62,67 @@ describe("server", () => {
     })
   })
   describe("[POST] /api/auth/login", () => {
-    
+    it("requires username and password", async () => {
+      let res;
+      res = await request(server)
+        .post("/api/auth/login")
+        .send({password: "foobar"})
+      expect(res.text).toMatch(/.*username and password required.*/)
+
+      res = await request(server)
+        .post("/api/auth/login")
+        .send({username: "Captain Marvel"})
+      expect(res.text).toMatch(/.*username and password required.*/)
+    })
+    it("checks if username exists", async () => {
+      let res;
+      res = await request(server)
+        .post("/api/auth/login")
+        .send(carol)
+        expect(res.text).toMatch(/.*invalid credentials.*/)
+    })
+    it("checks if password is correct", async () => {
+      let res;
+      await request(server)
+        .post("/api/auth/register")
+        .send(carol)
+      res = await request(server)
+        .post("/api/auth/login")
+        .send({...carol, password: "bad_password"})
+        expect(res.text).toMatch(/.*invalid credentials.*/)
+    })
+    it("logs in with valid credentials", async () => {
+      let res;
+      await request(server)
+        .post("/api/auth/register")
+        .send(carol)
+      res = await request(server)
+        .post("/api/auth/login")
+        .send(carol)
+      expect(res.text).toMatch(/.*welcome.*token.*/)
+    })
   })
   describe("[GET] /api/jokes", () => {
     it("is restricted by middleware", async () => {
       const res = await request(server).get("/api/jokes")
       expect(res.status).toBe(401)
       expect(res.text).toMatch(/.*token required.*/i)
+    })
+    it("allows access after login", async () => {
+      let res;
+      await request(server)
+        .post("/api/auth/register")
+        .send(carol)
+      res = await request(server)
+        .post("/api/auth/login")
+        .send(carol)
+      
+      let { token } = JSON.parse(res.text)
+
+      res = await request(server)
+        .get("/api/jokes")
+        .set("Authorization", token)
+      expect(res.body).toHaveLength(3)
     })
   })
 })
